@@ -7,12 +7,12 @@
 #include <SDL_opengl.h>
 #endif
 
-#include "../libs/imgui/imgui.h"
-#include "../libs/imgui/examples/imgui_impl_sdl.h"
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
 #if USE_RASTER
-#include "../libs/imgui/examples/imgui_impl_raster.h"
+#include "imgui_impl_raster.h"
 #else
-#include "../libs/imgui/examples/imgui_impl_opengl2.h"
+#include "imgui_impl_opengl2.h"
 #endif
 
 // Main code
