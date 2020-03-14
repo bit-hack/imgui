@@ -1,19 +1,9 @@
-#define USE_RASTER 1
-
 #include <cstdio>
 #include <SDL.h>
 
-#if !USE_RASTER
-#include <SDL_opengl.h>
-#endif
-
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
-#if USE_RASTER
 #include "imgui_impl_raster.h"
-#else
-#include "imgui_impl_opengl2.h"
-#endif
 
 // Main code
 int main(int, char**)
@@ -27,23 +17,9 @@ int main(int, char**)
         return -1;
     }
 
-#if !USE_RASTER
-    // Setup window
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    SDL_Window* window = SDL_CreateWindow("Dear ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
-    SDL_GLContext gl_context = SDL_GL_CreateContext(window);
-    SDL_GL_MakeCurrent(window, gl_context);
-    SDL_GL_SetSwapInterval(1); // Enable vsync
-#else
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     SDL_Window* window = SDL_CreateWindow("Dear ImGui SDL2+Raster example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
     SDL_Surface *surface = SDL_GetWindowSurface(window);
-#endif
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -56,7 +32,6 @@ int main(int, char**)
     ImGui::StyleColorsDark();
 
     // Setup Platform/Renderer bindings
-#if USE_RASTER
     ImGui_ImplSDL2_InitForRaster(window);
     ImGuiImplRasterinfo info = {
       (uint32_t*)(surface->pixels),
@@ -65,10 +40,6 @@ int main(int, char**)
       uint32_t(surface->pitch / 4)
     };
     ImGui_ImplRaster_Init(&info);
-#else
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    ImGui_ImplOpenGL2_Init();
-#endif
 
     // Load Fonts
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -84,7 +55,7 @@ int main(int, char**)
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != NULL);
-    io.Fonts->AddFontFromFileTTF("../resource/Inconsolata-Regular.ttf", 16.f);
+    // io.Fonts->AddFontFromFileTTF("../resource/Inconsolata-Regular.ttf", 16.f);
 
     // Our state
     bool show_demo_window = true;
@@ -109,11 +80,7 @@ int main(int, char**)
         }
 
         // Start the Dear ImGui frame
-#if USE_RASTER
         ImGui_ImplRaster_NewFrame();
-#else
-        ImGui_ImplOpenGL2_NewFrame();
-#endif
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
 
@@ -156,36 +123,20 @@ int main(int, char**)
 
         // Rendering
         ImGui::Render();
-#if !USE_RASTER
-        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-#endif
+        SDL_Delay(10);
+
         //glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
-#if USE_RASTER
-        SDL_FillRect(surface, nullptr, 0x101010);
+        SDL_FillRect(surface, nullptr, 0x203040);
         ImGui_ImplRaster_RenderDrawData(ImGui::GetDrawData());
         SDL_UpdateWindowSurface(window);
-#else
-        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-        SDL_GL_SwapWindow(window);
-#endif
     }
 
     // Cleanup
-#if USE_RASTER
     ImGui_ImplRaster_Shutdown();
-#else
-    ImGui_ImplOpenGL2_Shutdown();
-#endif
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 
-#if !USE_RASTER
-    SDL_GL_DeleteContext(gl_context);
-#else
     SDL_FreeSurface(surface);
-#endif
     SDL_DestroyWindow(window);
     SDL_Quit();
 
